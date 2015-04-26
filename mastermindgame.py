@@ -8,61 +8,62 @@ import itertools
 import pygame
 import mastermind
 import time
+import os
 
 def draw_background():
     #button grid
     for x in X_POS:
         for y in Y_POS:
-            pygame.draw.circle(screen, GREY, [x,y], 10)
+            pygame.draw.circle(screen, GREY, [x, y], 10)
 
     #pin background grid
     pygame.draw.rect(screen, GREY, [250, 75, 50, 500 ])
     for y in Y_POS:
-        pygame.draw.rect(screen, DARKGREY,[255, y-21 ,40, 40])
-        draw_pinquarter(0,0,275,y)
+        pygame.draw.rect(screen, DARKGREY, [255, y - 21, 40, 40])
+        draw_pinquarter(0, 0, 275, y)
 
     #solution base
     pygame.draw.rect(screen, GREY, [25, 25, 200, 40])
 
     #color buttons
-    for k in range(1,9):
+    for k in range(1, 9):
         y = 50 + k * 60 
         pygame.draw.circle(screen, COLOR[k], [350, y], 12)
 
     #menu
-    pygame.draw.rect(screen, (220,220,220), [0, 600 , 400, 75 ])
-    pygame.draw.rect(screen, BLACK,[0,600,400, 3])
+    pygame.draw.rect(screen, (220, 220, 220), [0, 600, 400, 75 ])
+    pygame.draw.rect(screen, BLACK, [0, 600, 400, 3])
     #check button 
     myfont.set_bold(True)
     checklabel = myfont.render("Check!", 1, BLACK)
-    screen.blit(checklabel,( 20, 615))
+    screen.blit(checklabel, (20, 615))
     #start button
     startlabel = myfont.render("Start", 1, BLACK)
-    screen.blit(startlabel,( 100, 615))
+    screen.blit(startlabel, (100, 615))
     #toggle color repetition
     if repeat == 1:
         repeatlabel = myfont.render("No unique", 1, BLACK)
-        screen.blit(repeatlabel,( 172, 607))
+        screen.blit(repeatlabel, (172, 607))
     if repeat == 0:
         repeatlabel = myfont.render("Unique", 1, BLACK)
-        screen.blit(repeatlabel,( 180, 607))
+        screen.blit(repeatlabel, (180, 607))
     repeatlabel = myfont.render("Color", 1, BLACK)
-    screen.blit(repeatlabel,( 180, 625))
+    screen.blit(repeatlabel, (180, 625))
     #leader board
     repeatlabel = myfont.render("Leader", 1, BLACK)
-    screen.blit(repeatlabel,( 260, 607))
+    screen.blit(repeatlabel, (260, 607))
     leaderlabel = myfont.render("board", 1, BLACK)
-    screen.blit(leaderlabel,( 260, 625))
+    screen.blit(leaderlabel, (260, 625))
     #counter
     if run_time == True:
         t = time.time() - t1
     else:
         t = t2 - t1
-    minut = int(t/60)
+    minut = int(t / 60)
     sec = int(t%60)
-    timestring = "{:}:{:0>2d}".format(minut,sec)
+    timestring = "{:}:{:0>2d}".format(minut, sec)
     timelabel = myfont.render(timestring, 1, BLACK)
-    screen.blit(timelabel,( 340, 615))
+    screen.blit(timelabel, (340, 615))
     myfont.set_bold(False)
 
 
@@ -74,7 +75,7 @@ def draw_game():
     #pop-up messages
     if mes['won'] == True:
         draw_messages('YOU WON')
-        add_message('%i  points (%i sec,  %i moves)'%(score, t2-t1, row+1))
+        add_message('%i points (%i sec, %i moves)'%(score, t2-t1, row+1))
     elif mes['pins'] == True:
         draw_messages('Choose four colors')
     elif mes['lost'] == True:
@@ -85,47 +86,51 @@ def draw_game():
     if mes['show_solution'] == True:
         show_solution()
     else: 
-        poslabel = myfont.render(" %i possibilities"%(possibilities), 1, BLACK)
-        screen.blit(poslabel,(40, 30))
+        poslabel = myfont.render("%i possibilities"%(possibilities), 1, BLACK)
+        screen.blit(poslabel, (40, 30))
 
 
 def draw_messages(text):
     """"draws popup box and message text"""
     pygame.draw.rect(screen, MESSAGECOLOR, [50, 200, 255, 100])
     label = myfont.render(text, 1, BLACK)
-    screen.blit(label,(120, 220))
+    screen.blit(label, (120, 220))
     pygame.draw.rect(screen, (240, 150, 50), [140, 270 ,60, 22])
-    label2 = myfont.render('OK',1, BLACK)
+    label2 = myfont.render('OK', 1, BLACK)
     screen.blit(label2, (160, 270))
 
 
 def add_message(text): #hack for new line
     """ hack for second line of message"""
     label = myfont.render(text, 1, BLACK)
-    screen.blit(label,(70, 250))
+    screen.blit(label, (70, 250))
 
 
 def show_leaderboard():
     import pandas as pd
-    #read in leaderboard
-    leaderboard = pd.read_csv('.mastermind.log')
-    #sort leaderboard
-    leaderboard =   leaderboard.sort('score', ascending = 0)
     #draw background
     pygame.draw.rect(screen, MESSAGECOLOR, [50, 100, 255, 200])
     #write 5 best entries of leaderboard
     myfont.set_bold(True)
     label = myfont.render("Leaderboard", 1, BLACK)
-    screen.blit(label,(100, 107))
+    screen.blit(label, (100, 107))
     myfont.set_bold(False)
     label = myfont.render("Date            Score", 1, BLACK)
-    screen.blit(label,(100, 130))
-    for i in range(5):
-        leaderline = "    ".join([ str(entry) for entry in leaderboard.iloc[i,[0,3]]])
-        label = myfont.render(leaderline, 1, BLACK)
-        screen.blit(label,(100, 150+i*20))
-    pygame.draw.rect(screen, (240, 150, 50), [140, 270 ,60, 22])
-    label2 = myfont.render('OK',1, BLACK)
+    screen.blit(label, (100, 130))
+    if os.path.exists('.mastermind.log'):
+        #read in leaderboard
+        leaderboard = pd.read_csv('.mastermind.log')
+        #sort leaderboard
+        leaderboard = leaderboard.sort('score', ascending = 0)
+
+        N = min (5, leaderboard.shape[0])
+        for i in range(N):
+            leaderline = "    ".join([ str(entry) 
+                for entry in leaderboard.iloc[i, [0, 3]]])
+            label = myfont.render(leaderline, 1, BLACK)
+            screen.blit(label, (100, 150+i*20))
+    pygame.draw.rect(screen, (240, 150, 50), [140, 270, 60, 22])
+    label2 = myfont.render('OK', 1, BLACK)
     screen.blit(label2, (160, 270))
 
 
@@ -135,15 +140,15 @@ def show_solution():
     y = 45
     for i in range(4):
         x = X_POS[i]
-        pygame.draw.circle(screen, COLOR[solution[i]], [x,y], 10)
+        pygame.draw.circle(screen, COLOR[solution[i]], [x, y], 10)
 
 
 def draw_currentRow():
     """draws little triangle to indicate current row"""
     x = 10
-    if row <=9:
+    if row <= 9:
         y = Y_POS[row]
-        pointlist = [(5,y-5), (10,y),(5,y+5)]
+        pointlist = [(5, y-5), (10, y),(5, y+5)]
         pygame.draw.polygon(screen, BLACK, pointlist)
 
 
@@ -151,18 +156,18 @@ def draw_pins():
     """draws correction of guess (black and white pins)"""
     x = 275
     for i in range(len(pin_grid)):
-        (b,w) = pin_grid[i]
+        (b, w) = pin_grid[i]
         y = Y_POS[i]
-        draw_pinquarter(b,w,x,y)
+        draw_pinquarter(b, w, x, y)
 
 
-def draw_pinquarter(b,w,x,y):
+def draw_pinquarter(b, w, x, y):
     pinc=[]
     for i in range(b):
         pinc.append(BLACK)
     for i in range(w):
         pinc.append(WHITE)
-    for i in range(4-b-w):
+    for i in range(4 - b - w):
         pinc.append(GREY)
     pygame.draw.circle(screen, pinc[0], [x - 10, y - 10], 5)
     pygame.draw.circle(screen, pinc[1], [x + 10, y - 10], 5)
@@ -177,7 +182,8 @@ def draw_buttons():
         for j in range(len(button_line)):
             col_code = button_line[j]    
             if col_code != None:
-                pygame.draw.circle(screen, COLOR[col_code], [X_POS[j], Y_POS[i]], 11)
+                pygame.draw.circle(screen, COLOR[col_code], 
+                                   [X_POS[j], Y_POS[i]], 11)
 
 
 def toggleMessage():
@@ -200,7 +206,7 @@ def inCurrentRow(pos):
     x = pos[0]
     y = pos[1]
     ylim = Y_POS[row]
-    if y > ylim+15 or y < ylim -15 or x > max(X_POS) or x < min(X_POS): 
+    if y > ylim + 15 or y < ylim - 15 or x > max(X_POS) or x < min(X_POS): 
         return False
     else:
         return True    
@@ -236,7 +242,7 @@ def inCheckButtonArea(pos):
 def inStartArea(pos):
     x = pos[0]
     y = pos[1]
-    if y < 600 or x < 100 or x> 170 : 
+    if y < 600 or x < 100 or x > 170 : 
         return False
     else:
         return True
@@ -273,7 +279,7 @@ def getColorCode(pos):
         return None
     c = (y - 25) /60
     c = int(c)
-    if c in range(1,9):
+    if c in range(1, 9):
         return c
     else:
         return None
@@ -282,7 +288,7 @@ def getColorCode(pos):
 def removePinFromGrid(pos):
     global column, row, button_grid
     x = pos[0]
-    diffx = [abs(x-x2) for x2 in X_POS]
+    diffx = [abs(x - x2) for x2 in X_POS]
     column = diffx.index(min(diffx))
     button_grid[row][column] = None
 
@@ -297,15 +303,23 @@ def updateGrid(pos):
 def archive():
     """ write score into leader board"""
     global score
-    zeit = t2-t1
-    score = int(500000./zeit/(row+1))
-    with open('.mastermind.log','a') as f:
-        f.write(time.strftime("%Y-%m-%d") + ', ' + str(row+1) + ', ' + str(zeit) + ', ' + str(score) +', '+ str(repeat) + '\n')
+    zeit = t2 - t1
+    score = int(500000. / zeit / (row + 1))
+    if not os.path.exists('.mastermind.log'):
+        with open('.mastermind.log','w') as f:
+            f.write('date,rows,time,score,repeat \n')
+    with open('.mastermind.log', 'a') as f:
+        f.write(time.strftime("%Y-%m-%d") + ', ' 
+                + str(row+1) + ', ' 
+                + str(zeit) + ', ' 
+                + str(score) + ', ' 
+                + str(repeat) + '\n')
         
 
 def eventButtonPressed():
     """ check guess/ solution """
-    global column, row, button_grid, pin_grid, thismind, mes, possibilities,t2, run_time
+    global column, row, button_grid, pin_grid 
+    global thismind, mes, possibilities, t2, run_time
     mes['pins'] = False
     this_guess = button_grid[row]
     this_guess = [str(k) for k in this_guess]
@@ -315,8 +329,8 @@ def eventButtonPressed():
             mes['pins'] = True
             return()
     #get correction for guess
-    (b,w) = thismind.getPins(this_guess)
-    pin_grid.append((b,w))
+    (b, w) = thismind.getPins(this_guess)
+    pin_grid.append((b, w))
     thismind.storeGuess(this_guess)
     if b == 4:
         mes['won'] = True
@@ -337,7 +351,8 @@ def eventButtonPressed():
 
 def start():
     """ initiate game, reset all"""
-    global pin_grid, button_grid, row, column, thismind, possibilities, t1, repeat, run_time
+    global column, row, pin_grid, button_grid 
+    global thismind, possibilities, t1, repeat, run_time
     # stores all correction pins (black and white)
     pin_grid = []
 
@@ -359,16 +374,16 @@ def start():
  
 
 # Define some colors
-WHITE = ( 255, 255, 255)
+WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
 ORANGE = (255, 125, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BROWN = (125, 125, 25)
-BLACK = ( 0, 0, 0)
+BLACK = (0, 0, 0)
 GREY = (170, 170, 170)
-DARKGREY = (150,150,150)
+DARKGREY = (150, 150, 150)
 BACKGROUND = (200, 200, 200)
 MESSAGECOLOR = (220, 200, 30)
 
@@ -386,7 +401,7 @@ COLOR[8] =   BLACK
 LEFT = 1
 
 # guess positions:
-X_POS = [50,100,150,200]
+X_POS = [50, 100, 150, 200]
 Y_POS = range(550, 99, -50) 
 
 #some toggle messages
@@ -398,7 +413,7 @@ mes['show_leader'] = False
 mes['show_solution'] = False
 
 #start pygame and set initial conditions
-repeat = False
+repeat = 0
 start()
 pygame.init()
 
@@ -432,7 +447,7 @@ while not done:
             elif inStartArea(event.pos):
                 start()
             elif inToggleRepeatArea(event.pos):
-                repeat = 1- repeat
+                repeat = 1 - repeat
                 start()
             elif inLeaderBoardArea(event.pos):
                 mes['show_leader'] = True               

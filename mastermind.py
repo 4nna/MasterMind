@@ -24,11 +24,11 @@ class Mastermind:
             self.possibles = [list(sam) for sam in self.possibles]
         else:
             self.solution = [str(random.randint(1, colors)) for i in range(bins)]
-            self.possibles = [[str(i),str(j),str(k),str(l)] 
-                                for i in range(1, colors+1) 
-                                  for j in range(1, colors+1) 
-                                    for k in range(1, colors+1) 
-                                      for l in range(1, colors+1)]
+            self.possibles = [[str(i), str(j), str(k), str(l)] 
+                                for i in range(1, colors + 1) 
+                                  for j in range(1, colors + 1) 
+                                    for k in range(1, colors + 1) 
+                                      for l in range(1, colors + 1)]
         #practice mode
         self.practice = False  
     
@@ -39,7 +39,8 @@ class Mastermind:
 
 
     def updatePossibilities(self):
-        """ number of remaining possibile solutions get reduced with each new game step"""
+        """ number of remaining possibile solutions 
+            get reduced with each new game step"""
         newpossibles = []
         for sam in self.possibles:   
             if self.couldBeSolution(sam):
@@ -48,7 +49,8 @@ class Mastermind:
 
 
     def wrongInput(self, my_sol):
-        """ function for practice mode: tells if the played guess is incongruent with earlier game steps"""
+        """ function for practice mode: 
+            tells if the played guess is incongruent with earlier game steps"""
         if my_sol not in self.possibles:
             print 'not possible, try again'
             return True
@@ -56,8 +58,9 @@ class Mastermind:
 
 
     def getGuess(self, smart = False):
-        """function for walkthrough mode: game guesses itself. smart guess: only choose from remaining possible solutions
-           not so smart guess: randomly guess within the allowed range of solultions"""
+        """function for walkthrough mode: game guesses itself. 
+            smart guess: only choose from remaining possible solutions
+            not so smart guess: randomly guess """
         if smart == True:
             guess = random.sample(self.possibles, 1)[0]
         else:
@@ -66,11 +69,13 @@ class Mastermind:
 
 
     def couldBeSolution(self, sam):
-        """ is the guess congruent with the given information from earlier game steps? given the previous information, 
+        """ is the guess congruent with the given information 
+            from earlier game steps? given the previous information, 
             could it be a solution?"""
-        for history_sam in self.history:        
-            if (self.getPinNumbers(history_sam, sam) != self.getPinNumbers(history_sam, self.solution) or\
-                self.getBlackPins(history_sam, sam) != self.getBlackPins(history_sam, self.solution)):
+        sol = self.solution
+        for hsam in self.history:        
+            if (self.getPinNumbers(hsam, sam) != self.getPinNumbers(hsam, sol) or\
+                self.getBlackPins(hsam, sam) != self.getBlackPins(hsam, sol)):
                 return False    
         return True
        
@@ -104,13 +109,13 @@ class Mastermind:
         pins = 0 
         for s in my_sol:
             if s in tempsolution:
-                pins+=1
+                pins += 1
                 tempsolution.pop(tempsolution.index(s))
         return pins
 
     
     def getPins(self, my_sol):
-        """get the number of black and white (color is correct, position is wrong) pins"""
+        """get the number of black and white pins"""
         allPins = self.getPinNumbers(my_sol, self.solution)
         blackPins = self.getBlackPins(my_sol, self.solution)
         whitePins = allPins - blackPins
@@ -122,8 +127,9 @@ class Mastermind:
         return my_sol == self.solution
 
 
-    def storeGuess(self,guess):
-        """ write guess to history, in order to calculate remaining possible solutions """
+    def storeGuess(self, guess):
+        """ write guess to history, 
+            in order to calculate remaining possible solutions """
         self.history.append(guess)
         return self.isCorrect(guess)
 
@@ -131,7 +137,7 @@ class Mastermind:
     def start(self):
 
         #you have 10 trials
-        for count in range(1,11):
+        for count in range(1, 11):
 
             #prompt for solution
             my_sol = raw_input('<%i>| '%(count))
@@ -156,7 +162,7 @@ class Mastermind:
             #calculate possibilities
             self.updatePossibilities()
             left = self.remainingPossibilities()
-            print left,' possibilities remain'
+            print left, ' possibilities remain'
         print ('you lost')
         self.writeSolution()
 
