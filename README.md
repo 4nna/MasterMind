@@ -3,8 +3,7 @@ MasterMind game, created using pygame
 
 Remarks: so far there are still a few bugs, but it's functional.
 
-start the game:
-run: python mastermindgame.py
+to start the game, run: python mastermindgame.py
 
 how to play: (http://en.wikipedia.org/wiki/Mastermind_(board_game) )
 >> goal: guess pattern of 4 colours
