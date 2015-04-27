@@ -85,7 +85,8 @@ def draw_game():
     #pop-up messages
     if mes['won'] == True:
         draw_messages('YOU WON')
-        add_message('%i points (%i sec, %i moves)'%(score, t2-t1, row+1))
+        if not had_help:
+            add_message('%i points (%i sec, %i moves)'%(score, t2-t1, row+1))
     elif mes['pins'] == True:
         draw_messages('Choose four colors')
     elif mes['lost'] == True:
@@ -146,7 +147,7 @@ def show_leaderboard():
 
 def show_solution():
     """shows solution, when game is over"""
-    solution = [int(k) for k in thismind.solution]
+    solution = [int(k) for k in this_mind.solution]
     y = 45
     for i in range(4):
         x = X_POS[i]
@@ -314,7 +315,7 @@ def archive():
 def eventButtonPressed():
     """ check guess/ solution """
     global column, row, button_grid, pin_grid 
-    global thismind, mes, possibilities, t2, run_time
+    global this_mind, mes, possibilities, t2, run_time
     mes['pins'] = False
     this_guess = button_grid[row]
     this_guess = [str(k) for k in this_guess]
@@ -324,18 +325,19 @@ def eventButtonPressed():
             mes['pins'] = True
             return()
     #get correction for guess
-    (b, w) = thismind.getPins(this_guess)
+    (b, w) = this_mind.getPins(this_guess)
     pin_grid.append((b, w))
-    thismind.storeGuess(this_guess)
+    this_mind.storeGuess(this_guess)
     if b == 4:
         mes['won'] = True
         t2 = time.time()
         run_time = False
         mes['show_solution'] = True
-        archive()
+        if not had_help:
+            archive()
         return()
-    thismind.updatePossibilities()
-    possibilities = thismind.remainingPossibilities()
+    this_mind.updatePossibilities()
+    possibilities = this_mind.remainingPossibilities()
     row += 1       
     if row > 9:
         mes['lost'] = True
@@ -344,10 +346,25 @@ def eventButtonPressed():
     column = 0
 
 
+def compatibleGuess(this_guess, this_mind):
+
+    for guess in this_mind.possibles:
+        if ((guess[0] == this_guess[0] or this_guess[0] == 'None') and 
+            (guess[1] == this_guess[1] or this_guess[1] == 'None') and 
+            (guess[2] == this_guess[2] or this_guess[2] == 'None') and 
+            (guess[3] == this_guess[3] or this_guess[3] == 'None') ):
+            return True
+    return False
+
 def start():
     """ initiate game, reset all"""
     global column, row, pin_grid, button_grid 
-    global thismind, possibilities, t1, repeat, run_time
+    global this_mind, possibilities, t1, repeat, run_time
+    global helpcolor, help_active, had_help
+    helpcolor = 1
+    help_active = 0
+    repeat = 0
+    had_help = False
     # stores all correction pins (black and white)
     pin_grid = []
 
@@ -359,8 +376,8 @@ def start():
     column = 0
 
     #initiate mastermind session
-    thismind = mastermind.Mastermind(repeat = repeat)
-    possibilities = thismind.remainingPossibilities()
+    this_mind = mastermind.Mastermind(repeat = repeat)
+    possibilities = this_mind.remainingPossibilities()
 
     #start timer
     t1 = time.time()
@@ -408,9 +425,6 @@ mes['show_leader'] = False
 mes['show_solution'] = False
 
 #start pygame and set initial conditions
-helpcolor = 1
-help_active = 0
-repeat = 0
 start()
 pygame.init()
 
@@ -438,7 +452,7 @@ while not done:
             done = True 
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
             if inColorArea(event.pos):
-                updateGrid( event.pos)
+                updateGrid(event.pos)
             elif inCheckButtonArea(event.pos):
                 eventButtonPressed()
             elif inStartArea(event.pos):
@@ -455,19 +469,25 @@ while not done:
             elif inHelpArea(event.pos):
                 help_active = 1 - help_active 
                 helpcolor = help_active + 1
-
+                had_help = True
 
 
     if help_active:
         this_guess = button_grid[row]
-        if not None in this_guess:
-            this_guess = [str(k) for k in this_guess]
-            if this_guess not in thismind.possibles:
+        this_guess = [str(k) for k in this_guess]
+        if 'None' in this_guess:
+            if compatibleGuess(this_guess, this_mind):
+                helpcolor = 2
+            else:
+                helpcolor = 4
+        if not 'None' in this_guess:
+        #    this_guess = [str(k) for k in this_guess]
+            if this_guess not in this_mind.possibles:
                 helpcolor = 4
             else:
                 helpcolor = 2
-        else:
-            helpcolor = 2
+ #       else:
+ #           helpcolor = 2
 
     # --- Drawing 
     screen.fill(BACKGROUND)
