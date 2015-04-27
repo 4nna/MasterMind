@@ -9,7 +9,6 @@ import pygame
 import mastermind
 import time
 import os
-
 def draw_background():
     #button grid
     for x in X_POS:
@@ -29,6 +28,17 @@ def draw_background():
     for k in range(1, 9):
         y = 50 + k * 60 
         pygame.draw.circle(screen, COLOR[k], [350, y], 12)
+
+    #help icon
+    myfont.set_bold(True)
+    pygame.draw.circle(screen, COLOR[helpcolor], [350,40],26)
+ #   helpcircle = pygame.Circle(26)
+    helplabel = myfont.render("?", 1, BLACK)
+    textpos = helplabel.get_rect()
+    textpos.centerx = 350 #screen.get_rect().centerx
+    textpos.centery = 40 #screen.get_rect().centery
+    screen.blit(helplabel, textpos)
+    myfont.set_bold(False)
 
     #menu
     pygame.draw.rect(screen, (220, 220, 220), [0, 600, 400, 75 ])
@@ -206,64 +216,49 @@ def inCurrentRow(pos):
     x = pos[0]
     y = pos[1]
     ylim = Y_POS[row]
-    if y > ylim + 15 or y < ylim - 15 or x > max(X_POS) or x < min(X_POS): 
-        return False
-    else:
-        return True    
+    return (y < ylim + 15 and  y > ylim - 15 and x < max(X_POS) and x > min(X_POS)) 
+
+
+def inHelpArea(pos):
+    x = pos[0]
+    y = pos[1]
+    return( y > 30 and y < 50 and x > 330 and x < 370)
 
 
 def inColorArea(pos):
     x = pos[0]
     y = pos[1]
-    if y < 50 or x > 400 or x < 300: 
-        return False
-    else:
-        return True
-
+    return y > 60 and x < 400 and x > 300 
+ 
 
 def inOKArea(pos):
     x = pos[0]
     y = pos[1]
-    if y < 240 or y > 320 or x > 210 or x < 130: 
-        return False
-    else:
-        return True
+    return y > 240 and y < 320 and x < 210 and x > 130 
 
 
 def inCheckButtonArea(pos):
     x = pos[0]
     y = pos[1]
-    if y < 600 or x > 90 : 
-        return False
-    else:
-        return True
+    return y > 600 and x < 90  
 
 
 def inStartArea(pos):
     x = pos[0]
     y = pos[1]
-    if y < 600 or x < 100 or x > 170 : 
-        return False
-    else:
-        return True
+    return y > 600 and x > 100 and x < 170  
 
 
 def inToggleRepeatArea(pos):
     x = pos[0]
     y = pos[1]
-    if y < 600 or x < 180 or x > 260 : 
-        return False
-    else:
-        return True
+    return y > 600 and x > 180 and x < 260  
 
 
 def inLeaderBoardArea(pos):
     x = pos[0]
     y = pos[1]
-    if y < 600 or x < 250 or x > 340 : 
-        return False
-    else:
-        return True
+    return y > 600 and x > 250 and x < 340  
 
 
 def getColor(pos):
@@ -413,6 +408,8 @@ mes['show_leader'] = False
 mes['show_solution'] = False
 
 #start pygame and set initial conditions
+helpcolor = 1
+help_active = 0
 repeat = 0
 start()
 pygame.init()
@@ -455,6 +452,22 @@ while not done:
                 toggleMessage()
             elif inCurrentRow(event.pos):
                 removePinFromGrid(event.pos)
+            elif inHelpArea(event.pos):
+                help_active = 1 - help_active 
+                helpcolor = help_active + 1
+
+
+
+    if help_active:
+        this_guess = button_grid[row]
+        if not None in this_guess:
+            this_guess = [str(k) for k in this_guess]
+            if this_guess not in thismind.possibles:
+                helpcolor = 4
+            else:
+                helpcolor = 2
+        else:
+            helpcolor = 2
 
     # --- Drawing 
     screen.fill(BACKGROUND)
