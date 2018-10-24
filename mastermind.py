@@ -52,7 +52,7 @@ class Mastermind:
         """ function for practice mode: 
             tells if the played guess is incongruent with earlier game steps"""
         if my_sol not in self.possibles:
-            print 'not possible, try again'
+            print ('not possible, try again')
             return True
         return False
 
@@ -85,7 +85,7 @@ class Mastermind:
         if blackpins + whitepins > self.bins: 
             return('error')
         nopins = self.bins - (blackpins + whitepins)
-        print 'X' * blackpins + 'W' * whitepins + 'O' * nopins
+        print ('X' * blackpins + 'W' * whitepins + 'O' * nopins)
 
 
     def writeSolution(self):
@@ -162,7 +162,7 @@ class Mastermind:
             #calculate possibilities
             self.updatePossibilities()
             left = self.remainingPossibilities()
-            print left, ' possibilities remain'
+            print (left, ' possibilities remain')
         print ('you lost')
         self.writeSolution()
 

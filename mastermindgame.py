@@ -132,7 +132,7 @@ def show_leaderboard():
         #read in leaderboard
         leaderboard = pd.read_csv('.mastermind.log')
         #sort leaderboard
-        leaderboard = leaderboard.sort('score', ascending = 0)
+        leaderboard = leaderboard.sort_values(by=['score'], ascending = False)
 
         N = min (5, leaderboard.shape[0])
         for i in range(N):
