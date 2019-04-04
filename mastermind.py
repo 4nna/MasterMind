@@ -9,92 +9,84 @@ import itertools
 
 class Mastermind:
 
-    def __init__(self, colors = 8 , bins = 4, repeat = False):
+    def __init__(self, colors=8, bins=4, repeat=False):
         self.history = []
-        #number of fields for solution (4)
+        # number of fields for solution (4)
         self.bins = bins
-        #number of colors to choose from (8)
+        # number of colors to choose from (8)
         self.colors = [str(k) for k in range(1, colors + 1)]
-        #repeated colors? ( False by default)
+        # repeated colors? ( False by default)
         self.repeat = repeat
         # initialize solution
-        if repeat == False:
+        if not repeat:
             self.solution = random.sample(self.colors, self.bins)
             self.possibles = list(itertools.permutations(self.colors, self.bins))
             self.possibles = [list(sam) for sam in self.possibles]
         else:
-            self.solution = [str(random.randint(1, colors)) for i in range(bins)]
+            self.solution = [str(random.randint(1, colors)) for _ in range(bins)]
             self.possibles = [[str(i), str(j), str(k), str(l)] 
                                 for i in range(1, colors + 1) 
                                   for j in range(1, colors + 1) 
                                     for k in range(1, colors + 1) 
                                       for l in range(1, colors + 1)]
-        #practice mode
+        # practice mode
         self.practice = False  
-    
 
-    def remainingPossibilities(self):
+    def remaining_possibilities(self):
         """ number of remaining possible solutions """
         return len(self.possibles)
 
-
-    def updatePossibilities(self):
+    def update_possibilities(self):
         """ number of remaining possibile solutions 
             get reduced with each new game step"""
         newpossibles = []
         for sam in self.possibles:   
-            if self.couldBeSolution(sam):
+            if self.could_be_solution(sam):
                 newpossibles.append(sam)
         self.possibles = newpossibles
 
-
-    def wrongInput(self, my_sol):
+    def wrong_input(self, my_sol):
         """ function for practice mode: 
             tells if the played guess is incongruent with earlier game steps"""
         if my_sol not in self.possibles:
-            print ('not possible, try again')
+            print('not possible, try again')
             return True
         return False
 
-
-    def getGuess(self, smart = False):
+    def get_guess(self, smart=False):
         """function for walkthrough mode: game guesses itself. 
             smart guess: only choose from remaining possible solutions
             not so smart guess: randomly guess """
-        if smart == True:
+        if smart:
             guess = random.sample(self.possibles, 1)[0]
         else:
             guess = random.sample(self.colors, self.bins)
         return guess
 
-
-    def couldBeSolution(self, sam):
+    def could_be_solution(self, sam):
         """ is the guess congruent with the given information 
             from earlier game steps? given the previous information, 
             could it be a solution?"""
         sol = self.solution
         for hsam in self.history:        
-            if (self.getPinNumbers(hsam, sam) != self.getPinNumbers(hsam, sol) or\
-                self.getBlackPins(hsam, sam) != self.getBlackPins(hsam, sol)):
+            if (self.get_pin_numbers(hsam, sam) != self.get_pin_numbers(hsam, sol) or
+                self.get_black_pins(hsam, sam) != self.get_black_pins(hsam, sol)):
                 return False    
         return True
        
-
-    def writePins(self, blackpins, whitepins):
+    def write_pins(self, blackpins, whitepins):
         """ print black (X) and white (O) pins to std out """
         if blackpins + whitepins > self.bins: 
-            return('error')
+            return 'error'
         nopins = self.bins - (blackpins + whitepins)
-        print ('X' * blackpins + 'W' * whitepins + 'O' * nopins)
+        print('X' * blackpins + 'W' * whitepins + 'O' * nopins)
 
-
-    def writeSolution(self):
+    def write_solution(self):
         """ print solution to std.out """
         solutionstring = "".join(self.solution)
         print(solutionstring)
 
-
-    def getBlackPins(self, my_sol, solution):
+    def get_black_pins(self, my_sol, solution):
         """ get the number of correct pins (color and position is correct)"""
         blackpins = 0
         for i in range(self.bins):
@@ -102,8 +94,7 @@ class Mastermind:
                 blackpins += 1
         return blackpins 
 
-
-    def getPinNumbers(self, my_sol, solution):
+    def get_pin_numbers(self, my_sol, solution):
         """ get the total number of pins (color is in the solution)"""
         tempsolution = solution[:]
         pins = 0 
@@ -113,58 +104,54 @@ class Mastermind:
                 tempsolution.pop(tempsolution.index(s))
         return pins
 
-    
-    def getPins(self, my_sol):
+    def get_pins(self, my_sol):
         """get the number of black and white pins"""
-        allPins = self.getPinNumbers(my_sol, self.solution)
-        blackPins = self.getBlackPins(my_sol, self.solution)
-        whitePins = allPins - blackPins
-        return (blackPins, whitePins)
+        allpins = self.get_pin_numbers(my_sol, self.solution)
+        blackpins = self.get_black_pins(my_sol, self.solution)
+        whitepins = allpins - blackpins
+        return blackpins, whitepins
 
-
-    def isCorrect(self, my_sol):
+    def is_correct(self, my_sol):
         """ you found the correct solution"""
         return my_sol == self.solution
 
-
-    def storeGuess(self, guess):
+    def store_guess(self, guess):
         """ write guess to history, 
             in order to calculate remaining possible solutions """
         self.history.append(guess)
-        return self.isCorrect(guess)
-
+        return self.is_correct(guess)
 
     def start(self):
 
-        #you have 10 trials
+        # you have 10 trials
         for count in range(1, 11):
 
-            #prompt for solution
-            my_sol = raw_input('<%i>| '%(count))
+            # prompt for solution
+            my_sol = input('<%i>| '%(count))
             my_sol = [k for k in my_sol]
 
-            #in practice mode: try again until your guess makes sense
-            if self.practice == True:
-                while (self.wrongInput(my_sol)):
-                    my_sol = raw_input('<%s>| '%(count))
+            # in practice mode: try again until your guess makes sense
+            if self.practice:
+                while (self.wrong_input(my_sol)):
+                    my_sol = input('<%s>| '%(count))
                     my_sol = [k for k in my_sol]
 
-            self.storeGuess(my_sol)
+            self.store_guess(my_sol)
             if my_sol == self.solution:
-                print ('you won')
-                self.writeSolution()
+                print('you won')
+                self.write_solution()
                 return()
 
-            #calculate black and white pins
-            (blackpins, whitepins) = self.getPins(my_sol)
+            # calculate black and white pins
+            (blackpins, whitepins) = self.get_pins(my_sol)
             # write black and white pins
-            self.writePins(blackpins, whitepins)
-            #calculate possibilities
-            self.updatePossibilities()
-            left = self.remainingPossibilities()
-            print (left, ' possibilities remain')
-        print ('you lost')
-        self.writeSolution()
+            self.write_pins(blackpins, whitepins)
+            # calculate possibilities
+            self.update_possibilities()
+            left = self.remaining_possibilities()
+            print(left, ' possibilities remain')
+        print('you lost')
+        self.write_solution()
 
 if __name__ == '__main__':
     main()
