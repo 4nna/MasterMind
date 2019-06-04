@@ -1,6 +1,9 @@
 import pygame
 
-class Button():
+#class Box():
+
+
+class Button() :
 
     def __init__(self, left, top, width, height, color, bordercolor, text, textcolor):
         self.left = left
@@ -30,6 +33,9 @@ class Button():
 
     def inactive(self, color):
         self.bordercolor=color
+
+    def get_text(self):
+        return self.text
 
     def update_text(self, text):
         self.text = text

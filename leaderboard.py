@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-
+from collections import Counter
 
 
 class Leaderboard():
@@ -14,6 +14,7 @@ class Leaderboard():
             # sort leaderboard
             self.table = self.table.sort_values(by=['score'], ascending=False)
             self.N = min(15, self.table.shape[0])
+
         if os.path.exists(sessionlogfile): #
             self.session = pd.read_csv(sessionlogfile, header=None)
             self.session.columns = ['date', 'game', 'repeat', 'name', 'dt', 'steps', 'col1', 'col2', 'col3', 'col4', 'pin_black', 'pin_white', 'reduced_possibilities']
@@ -29,6 +30,9 @@ class Leaderboard():
     def top(self):
         return self.table[['date', 'name', 'score']][0:self.N]
 
+    def top_names(self):
+        names =  Counter(self.table['name'].unique())
+        return [name for name, count in names.most_common(5)]
 
     def stats(self):
 

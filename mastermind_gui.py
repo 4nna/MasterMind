@@ -80,6 +80,7 @@ import pandas as pd
 import pygame
 import leaderboard
 import button
+import text_inputbox
 import mastermind
 
 
@@ -108,6 +109,7 @@ class Gamesession:
         self.start_game_button = button.Button(left, 450, width, height, GREY, BLACK, 'start game', BLACK)
         self.stop_game_button = button.Button(left, 550, width, height, GREY, BLACK, 'stop game', BLACK)
 
+
         #AI
         self.user_button = button.Button(left, 100, width, height, GREY, BLACK, 'user/no AI', BLACK)
         self.ai1_button = button.Button(left, 200, width, height, GREY, BLACK, 'simple AI', BLACK)
@@ -116,9 +118,21 @@ class Gamesession:
         self.back_button = button.Button(left, 500, width, height, GREY, BLACK, 'back', BLACK)
 
         #LEADERBOARD
+        self.leadtable = leaderboard.Leaderboard()
         self.lb_show_button =  button.Button(60, 600, 130, 40, GREY, BLACK, 'stats', BLACK)
         self.lb_back_button =  button.Button(210, 600, 130, 40, GREY, BLACK, 'back', BLACK)
         self.lb_window = 'leaderboard'
+
+        #USERNAME
+        self.topnames = self.leadtable.top_names()
+        self.username_list_buttons = []
+        for i,key in enumerate(self.topnames):
+            x = 200 + 100*i
+            self.username_list_buttons.append(button.Button(left, x, width, height, GREY, BLACK, key, BLACK))
+
+        self.text_input = text_inputbox.InputBox(200, 100, 100, 100, height, WHITE, BLACK, "enter username", BLACK, GREY)
+        #self.ok_button = button.Button()
+
         # initiate game, reset all
         pygame.init()
 
@@ -148,8 +162,7 @@ class Gamesession:
                 if self.window=='start':
                     self.start_window(event)
                 elif self.window == 'username':
-                    self.get_username_events(event)
-                    self.draw_username()
+                    self.username_window(event)
                 elif self.window == 'ai':
                     self.ai_window(event)
                 elif self.window == 'leaderboard':
@@ -211,11 +224,28 @@ class Gamesession:
         self.start_game_button.draw(self.screen, self.myfont)
         self.stop_game_button.draw(self.screen, self.myfont)
 
-    def get_username_events(self, event):
-        pass
+    def username_window(self, event):
+        username = self.text_input.get_input(event)
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+            self.username = username
 
-    def draw_username(self):
-        pass
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
+            for i,key in enumerate(self.topnames):
+                if self.username_list_buttons[i].clicked(event.pos):
+                    self.username = self.username_list_buttons[i].get_text()
+            if self.back_button.clicked(event.pos):
+                self.window = 'start'
+
+        for i,key in enumerate(self.topnames):
+            if self.username_list_buttons[i].get_text() == self.username:
+                self.username_list_buttons[i].active(RED)
+            else:
+                self.username_list_buttons[i].inactive(BLACK)
+        self.text_input.draw(self.screen, self.myfont)
+        for i,key in enumerate(self.topnames):
+            self.username_list_buttons[i].draw(self.screen, self.myfont)
+        self.back_button.draw(self.screen, self.myfont)
+
 
     def ai_window(self, event):
 
@@ -286,8 +316,7 @@ class Gamesession:
         pygame.draw.rect(self.screen, BLACK, [left+3, 53, width, height])
         pygame.draw.rect(self.screen, GREY, [left, 50, width, height])
         self.write("Leaderboard", left+width/2, 45, BLACK)
-        leadtable = leaderboard.Leaderboard()
-        self.write_table(leadtable.top(), left+10, 60, BLACK)
+        self.write_table(self.leadtable.top(), left+10, 60, BLACK)
 
 
     def draw_stats(self):
@@ -297,8 +326,7 @@ class Gamesession:
         pygame.draw.rect(self.screen, BLACK, [left+3, 53, width, height])
         pygame.draw.rect(self.screen, GREY, [left, 50, width, height])
         self.write("Stats", left+width/2, 45, BLACK)
-        leadtable = leaderboard.Leaderboard()
-        leadtable.stats()
+        self.leadtable.stats()
         statsImg = pygame.image.load('stats.png')
         self.screen.blit(statsImg, (left+10, 53))
 
