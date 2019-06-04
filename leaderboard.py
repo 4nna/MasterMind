@@ -33,10 +33,10 @@ class Leaderboard():
     def stats(self):
 
         gdf = self.session.groupby(['game'])['steps', 'dt'].max()
-        print('min steps:', gdf.steps.min())
-        print('median steps:', gdf.steps.median())
-        print('min time:', gdf.dt.min())
-        print('median time:', gdf.dt.median())
+       # print('min steps:', gdf.steps.min())
+       # print('median steps:', gdf.steps.median())
+       # print('min time:', gdf.dt.min())
+       # print('median time:', gdf.dt.median())
         #fig, ax = plt.subplots(nrows=1, ncols=1)  # create figure & 1 axis
         fig = plt.figure(figsize=(3, 3))
         ax = fig.add_subplot(111)

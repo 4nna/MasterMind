@@ -83,30 +83,6 @@ import button
 import mastermind
 
 
-def in_username_area(pos):
-    return left < pos[0] < left+width and 50 < pos[1] < 50+height
-
-def in_AI_area(pos):
-    return left < pos[0] < left+width and 150 < pos[1] < 150+height
-
-def in_color_area(pos):
-    return left < pos[0] < left+width and 250 < pos[1] < 250+height
-
-def in_leaderboard_area(pos):
-    return left < pos[0] < left+width and 350 < pos[1] < 350+height
-
-def in_game_area(pos):
-    return left < pos[0] < left+width and 450 < pos[1] < 450+height
-
-def in_quit_area(pos):
-    return left < pos[0] < left+width and 550 < pos[1] < 550+height
-
-def in_back_area(pos):
-    return 210 < pos[0] < 380 and  600 < pos[1] < 640
-
-def in_stats_area(pos):
-    return 20 < pos[0] < 190 and  600 < pos[1] < 640
-
 class Gamesession:
     global width
     width= 200
@@ -120,10 +96,17 @@ class Gamesession:
         self.username = 'anna'
         self.AI = 'user/no AI'
         self.mode = 'unique colors'
-
-
         self.sessionlogfile = '.mastermind_session.log'
+        self.logfile = '.mastermind.log'
         #initiate screens
+
+        #START
+        self.select_username_button = button.Button(left, 50, width, height, GREY, BLACK, 'select username', BLACK)
+        self.select_ai_button = button.Button(left, 150, width, height, GREY, BLACK, 'select AI', BLACK)
+        self.toggle_color_button = button.Button(left, 250, width, height, GREY, BLACK, self.mode, BLACK)
+        self.show_leaderboard_button = button.Button(left, 350, width, height, GREY, BLACK, 'show leaderboard', BLACK)
+        self.start_game_button = button.Button(left, 450, width, height, GREY, BLACK, 'start game', BLACK)
+        self.stop_game_button = button.Button(left, 550, width, height, GREY, BLACK, 'stop game', BLACK)
 
         #AI
         self.user_button = button.Button(left, 100, width, height, GREY, BLACK, 'user/no AI', BLACK)
@@ -132,7 +115,10 @@ class Gamesession:
         self.ai3_button = button.Button(left, 400, width, height, GREY, BLACK, 'RL DL AI', BLACK)
         self.back_button = button.Button(left, 500, width, height, GREY, BLACK, 'back', BLACK)
 
-
+        #LEADERBOARD
+        self.lb_show_button =  button.Button(60, 600, 130, 40, GREY, BLACK, 'stats', BLACK)
+        self.lb_back_button =  button.Button(210, 600, 130, 40, GREY, BLACK, 'back', BLACK)
+        self.lb_window = 'leaderboard'
         # initiate game, reset all
         pygame.init()
 
@@ -160,19 +146,14 @@ class Gamesession:
             # --- Drawing
                 self.screen.fill(BACKGROUND)
                 if self.window=='start':
-                    self.get_start_events(event)
-                    self.draw_start()
+                    self.start_window(event)
                 elif self.window == 'username':
                     self.get_username_events(event)
                     self.draw_username()
                 elif self.window == 'ai':
                     self.ai_window(event)
                 elif self.window == 'leaderboard':
-                    self.get_leaderboard_events(event)
-                    self.draw_leaderboard()
-                elif self.window == 'stats':
-                    self.get_stats_events(event)
-                    self.draw_stats()
+                    self.leaderboard_window(event)
                 elif self.window == 'game':
                     #self.get_game_events(event)
                     #self.draw_game()
@@ -202,61 +183,33 @@ class Gamesession:
             label = self.myfont.render(line, 1, BLACK)
             self.screen.blit(label, (X, Y+i*20))
 
-    def draw_start(self):
-        # start window
-        #select username
-        width = 200
-        height = 60
-        left = 100
-        pygame.draw.rect(self.screen, BLACK, [left+3, 53, width, height])
-        pygame.draw.rect(self.screen, GREY, [left, 50, width, height])
-        self.write("select username", left+width/2, 50+height/2 - 20, BLACK)
-        self.write(self.username, left+width/2, 50+height/2, RED)
 
-        #show AI
-        pygame.draw.rect(self.screen, BLACK, [left+3, 153, width, height])
-        pygame.draw.rect(self.screen, GREY, [left, 150,  width, height])
-        self.write("select AI", left+width/2, 150+height/2 - 20, BLACK)
-        self.write(self.AI, left+width/2, 150+height/2, RED)
-
-        #toggle unique/multi
-        pygame.draw.rect(self.screen, BLACK, [left+3, 253, width, height])
-        pygame.draw.rect(self.screen, GREY, [left, 250, width, height])
-        self.write(self.mode, left+width/2, 250+height/2, RED)
-
-        #show leaderboard
-        pygame.draw.rect(self.screen, BLACK, [left+3, 353, width, height])
-        pygame.draw.rect(self.screen, GREY, [left, 350, width, height])
-        self.write("show leaderboard", left+width/2, 350+height/2, BLACK)
-
-        #start game
-        pygame.draw.rect(self.screen, BLACK, [left+3, 453, width, height])
-        pygame.draw.rect(self.screen, GREY, [left, 450, width, height])
-        self.write("start game", left+width/2, 450+height/2, BLACK)
-
-        #quit game
-        pygame.draw.rect(self.screen, BLACK, [left+3, 553, width, height])
-        pygame.draw.rect(self.screen, GREY, [left, 550, width, height])
-        self.write("stop game", left+width/2, 550+height/2, BLACK)
-
-    def get_start_events(self, event):
+    def start_window(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_KP_ENTER or event.key == pygame.K_RETURN:
                 pygame.quit()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
             #print(event.pos)
-            if in_username_area(event.pos):
+            if self.select_username_button.clicked(event.pos):
                 self.window = 'username'
-            elif in_AI_area(event.pos):
+            elif self.select_ai_button.clicked(event.pos):
                 self.window = 'ai'
-            elif in_color_area(event.pos):
+            elif self.toggle_color_button.clicked(event.pos):
                 self.toggle_multicolor()
-            elif in_leaderboard_area(event.pos):
+                self.toggle_color_button.update_text(self.mode)
+            elif self.show_leaderboard_button.clicked(event.pos):
                 self.window = 'leaderboard'
-            elif in_game_area(event.pos):
+            elif self.start_game_button.clicked(event.pos):
                 self.window = 'game'
-            elif in_quit_area(event.pos):
+            elif self.stop_game_button.clicked(event.pos):
                 pygame.quit()
+
+        self.select_username_button.draw(self.screen, self.myfont)
+        self.select_ai_button.draw(self.screen, self.myfont)
+        self.toggle_color_button.draw(self.screen, self.myfont)
+        self.show_leaderboard_button.draw(self.screen, self.myfont)
+        self.start_game_button.draw(self.screen, self.myfont)
+        self.stop_game_button.draw(self.screen, self.myfont)
 
     def get_username_events(self, event):
         pass
@@ -303,13 +256,28 @@ class Gamesession:
         self.back_button.draw(self.screen, self.myfont)
 
 
-    def get_leaderboard_events(self, event):
+    def toggle_lb_window(self):
+        if self.lb_window == 'leaderboard':
+            self.lb_window = 'stats'
+            self.lb_show_button.update_text('leaderboard')
+        else:
+            self.lb_window = 'leaderboard'
+            self.lb_show_button.update_text('stats')
+
+
+    def leaderboard_window(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
             #print(event.pos)
-            if in_back_area(event.pos):
+            if self.lb_back_button.clicked(event.pos):
                 self.window = 'start'
-            elif in_stats_area(event.pos):
-                self.window = 'stats'
+            elif self.lb_show_button.clicked(event.pos):
+                self.toggle_lb_window()
+        self.lb_show_button.draw(self.screen, self.myfont)
+        self.lb_back_button.draw(self.screen, self.myfont)
+        if self.lb_window=='leaderboard':
+            self.draw_leaderboard()
+        else:
+            self.draw_stats()
 
     def draw_leaderboard(self):
         height = 400
@@ -321,22 +289,6 @@ class Gamesession:
         leadtable = leaderboard.Leaderboard()
         self.write_table(leadtable.top(), left+10, 60, BLACK)
 
-        height = 40
-        pygame.draw.rect(self.screen, BLACK, [left+3, 603, width/2-10, height])
-        pygame.draw.rect(self.screen, GREY, [left, 600, width/2-10, height])
-        self.write("Stats", left+width/4, 620, BLACK)
-        pygame.draw.rect(self.screen, BLACK, [left+3+width/2+10, 603, width/2-10, height])
-        pygame.draw.rect(self.screen, GREY, [left+width/2+10, 600, width/2-10, height])
-        self.write("Back", left+3*width/4, 620, BLACK)
-
-
-    def get_stats_events(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
-            #print(event.pos)
-            if in_back_area(event.pos):
-                self.window = 'start'
-            elif in_stats_area(event.pos):
-                self.window = 'leaderboard'
 
     def draw_stats(self):
         height = 320
@@ -349,14 +301,6 @@ class Gamesession:
         leadtable.stats()
         statsImg = pygame.image.load('stats.png')
         self.screen.blit(statsImg, (left+10, 53))
-
-        height = 40
-        pygame.draw.rect(self.screen, BLACK, [left+3, 603, width/2-10, height])
-        pygame.draw.rect(self.screen, GREY, [left, 600, width/2-10, height])
-        self.write("Leaderboard", left+width/4, 620, BLACK)
-        pygame.draw.rect(self.screen, BLACK, [left+3+width/2+10, 603, width/2-10, height])
-        pygame.draw.rect(self.screen, GREY, [left+width/2+10, 600, width/2-10, height])
-        self.write("Back", left+3*width/4, 620, BLACK)
 
 
     def toggle_multicolor(self):

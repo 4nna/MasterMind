@@ -30,3 +30,6 @@ class Button():
 
     def inactive(self, color):
         self.bordercolor=color
+
+    def update_text(self, text):
+        self.text = text
