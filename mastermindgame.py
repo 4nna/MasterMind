@@ -12,7 +12,7 @@ import time
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-#class MasterMindGame(pygame):
+# class MasterMindGame(pygame):
 # init = session_start, set global vars,
 # reset = start
 # make menu: -> register with name?, select AI-agent?
@@ -113,7 +113,7 @@ def draw_game():
     if mes['show_solution'] is True:
         show_solution()
     else: 
-        poslabel = myfont.render("%i possibilities" % (possibilities), 1, BLACK)
+        poslabel = myfont.render("%i possibilities" % possibilities, 1, BLACK)
         screen.blit(poslabel, (40, 30))
         # counter
         if run_time:
@@ -125,7 +125,6 @@ def draw_game():
         timestring = "{:}:{:0>2d}".format(minut, sec)
         timelabel = myfont.render(timestring, 1, BLACK)
         screen.blit(timelabel, (170, 30))
-
 
 
 def draw_messages(text):
@@ -152,7 +151,7 @@ def show_leaderboard():
     label = myfont.render("Leaderboard", 1, BLACK)
     screen.blit(label, (100, 107))
     myfont.set_bold(False)
-    label = myfont.render("Date            Score", 1, BLACK)
+    label = myfont.render("Date            Name      Score", 1, BLACK)
     screen.blit(label, (100, 130))
     if os.path.exists('.mastermind.log'):
         # read in leaderboard
@@ -163,7 +162,7 @@ def show_leaderboard():
         N = min(5, leaderboard.shape[0])
         for i in range(N):
             leaderline = "    ".join([str(entry)
-                                     for entry in leaderboard.iloc[i, [0, 3]]])
+                                     for entry in leaderboard[['date', 'name', 'score']].iloc[i]])
             label = myfont.render(leaderline, 1, BLACK)
             screen.blit(label, (100, 150+i*20))
     pygame.draw.rect(screen, (240, 150, 50), [140, 270, 60, 22])
@@ -190,9 +189,9 @@ def draw_current_row():
 
 
 def draw_current():
-    if row<= 9:
+    if row <= 9:
         pygame.draw.circle(screen, YELLOW,
-                       [X_POS[column], Y_POS[row]], 12, 2)
+                           [X_POS[column], Y_POS[row]], 12, 2)
 
 
 def draw_pins():
@@ -262,11 +261,13 @@ def in_color_area(pos):
     x = pos[0]
     y = pos[1]
     return 60 < y < 600 and 300 < x < 400
- 
+
+
 def in_ai_area(pos):
     x = pos[0]
     y = pos[1]
     return y > 600 and 300 < x < 400
+
 
 def in_ok_area(pos):
     x = pos[0]
@@ -331,18 +332,18 @@ def undo_last():
     column = column % 4
     button_grid[row][column] = None
 
+
 def update_grid(color):
     global column, row, button_grid
     button_grid[row][column] = color
     column += 1
     column = column % 4
 
+
 def fill_row_automatically(possibilities):
-    one_option = random.sample(possibilities,1)[0]
+    one_option = random.sample(possibilities, 1)[0]
     one_option = [int(k) for k in one_option]
     button_grid[row] = one_option
-
-
 
 
 def archive():
@@ -352,19 +353,21 @@ def archive():
     score = int(500000. / zeit / (row + 1))
     if not os.path.exists('.mastermind.log'):
         with open('.mastermind.log', 'w') as f:
-            f.write('date,rows,time,score,repeat \n')
+            f.write('date,name,rows,time,score,repeat\n')  # no whitespaces in column names..
     with open('.mastermind.log', 'a') as f:
-        f.write(time.strftime("%Y-%m-%d") + ', ' 
+        f.write(time.strftime("%Y-%m-%d") + ', '
+                + str(name) + ', '
                 + str(row+1) + ', ' 
                 + str(zeit) + ', ' 
                 + str(score) + ', ' 
                 + str(repeat) + '\n')
 
+
 # initialize game when starting mastermind, from logs.
-def archive_sessions( game, dt, colors, pins, remaining_possibilities, name='Guest'):
+def archive_sessions(game, dt, colors, pins, remaining_possibilities, name='Guest'):
     """ write all steps and choices and results for statistics"""
     global sessionlogfile
-    with open(sessionlogfile,'a') as f:
+    with open(sessionlogfile, 'a') as f:
         f.write(time.strftime("%Y-%m-%d") + ', '
                 + str(game) + ', '
                 + str(repeat) + ', '
@@ -375,15 +378,16 @@ def archive_sessions( game, dt, colors, pins, remaining_possibilities, name='Gue
                 + str(pins) + ', '
                 + str(remaining_possibilities) + '\n')
 
+
 def stats():
     pdf = pd.read_csv(sessionlogfile, header=None)
-    pdf.columns = ['date', 'game', 'repeat', 'name','dt', 'steps', 'col1','col2','col3','col4', 'pin_black','pin_white', 'reduced_possibilities']
-    gdf = pdf.groupby(['game'])['steps','dt'].max()
+    pdf.columns = ['date', 'game', 'repeat', 'name', 'dt', 'steps', 'col1', 'col2', 'col3', 'col4', 'pin_black', 'pin_white', 'reduced_possibilities']
+    gdf = pdf.groupby(['game'])['steps', 'dt'].max()
     print(gdf.head())
     print('min steps:', gdf.steps.min())
     print('median steps:', gdf.steps.median())
     print('min time:', gdf.dt.min())
-    print('median time:', gdf.dt.median() )
+    print('median time:', gdf.dt.median())
     plt.plot(pdf.steps, pdf.reduced_possibilities)
     plt.show()
 #    ndf = pdf.groupby(['name'])['steps','dt','game'].agg([min, min, nunique()]
@@ -391,7 +395,8 @@ def stats():
 # number of steps until solution
 # time until solution
 # number of incompatible moves (i.e. not fitting to pins) - this is not necessarily bad..
-#give each AI agent a name... for stats...
+# give each AI agent a name... for stats...
+
 
 def event_button_pressed():
     """ check guess/ solution """
@@ -441,7 +446,7 @@ def compatible_guess(this_guess, this_mind):
         if ((guess[0] == this_guess[0] or this_guess[0] == 'None') and 
             (guess[1] == this_guess[1] or this_guess[1] == 'None') and 
             (guess[2] == this_guess[2] or this_guess[2] == 'None') and 
-            (guess[3] == this_guess[3] or this_guess[3] == 'None') ):
+            (guess[3] == this_guess[3] or this_guess[3] == 'None')):
             return True
     return False
 
@@ -453,7 +458,7 @@ def start():
     global helpcolor, help_active, had_help, game
     helpcolor = 1
     help_active = 0
-   # repeat = False
+    # repeat = False
     had_help = False
     # stores all correction pins (black and white)
     pin_grid = []
@@ -474,7 +479,9 @@ def start():
     t2 = None
     run_time = True
     game += 1
-#global variables and their defaults
+
+
+# global variables and their defaults
 helpcolor = 1
 help_active = 0
 repeat = False
@@ -497,7 +504,7 @@ t1 = time.time()
 t2 = None
 run_time = True
 
-game = 0 #read from sessionlog
+game = 0  # read from sessionlog
 name = 'anna'
 sessionlogfile = '.mastermind_session.log'
 
@@ -541,7 +548,7 @@ mes['show_leader'] = False
 mes['show_solution'] = False
 
 # start pygame and set initial conditions
-#session_start()
+# session_start()
 start()
 pygame.init()
 
@@ -592,8 +599,8 @@ while not done:
                 mes['show_leader'] = True
                 stats()
             elif in_ai_area(event.pos):
-                #fill_row_automatically(this_mind.possibles)
-                #had_help = True
+                # fill_row_automatically(this_mind.possibles)
+                # had_help = True
                 # start self run via AI.
                 # set name=AI
                 pass
@@ -602,7 +609,7 @@ while not done:
             elif incurrent_row(event.pos):
                 remove_pin_from_grid(event.pos)
             elif in_help_area(event.pos):
-                #implement here: the row-help via AI. i.e.
+                # implement here: the row-help via AI. i.e.
                 # if color is red and clicked again: set via AI.
                 help_active = 1 - help_active 
                 helpcolor = help_active + 1
@@ -628,7 +635,6 @@ while not done:
     screen.fill(BACKGROUND)
     draw_background()
     draw_game()
-
 
     # ---  update the screen .
     pygame.display.flip()
