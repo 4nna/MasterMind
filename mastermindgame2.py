@@ -4,6 +4,7 @@ import os
 import mastermind
 import button
 import messagebox
+import ai
 from constants import *
 
 
@@ -16,7 +17,8 @@ class MastermindGame():
         self.screen  = None
         self.myfont = None
         self.username = None
-        self.AI = None
+        self.ai_type = None
+        self.ai = None
         self.mode = None
         self.repeat = None
         self.sessionlogfile = '.mastermind_session.log'
@@ -27,7 +29,7 @@ class MastermindGame():
         self.active = False
         self.row = 0
         self.column = 0
-        self.thismind = None
+        self.this_mind = None
         self.possibilities = None
         self.pin_grid = []
         self.button_grid = [[None] * 4 for _ in range(10)]
@@ -45,7 +47,7 @@ class MastermindGame():
     def reset(self):
         self.row = 0
         self.column = 0
-        self.thismind = None
+        self.this_mind = None
         self.possibilities = None
         self.pin_grid = []
         self.button_grid = [[None] * 4 for _ in range(10)]
@@ -54,41 +56,48 @@ class MastermindGame():
         self.screen = screen
         self.myfont = myfont
         self.username = username
-        self.AI = ai
+        self.ai_type = ai
         self.mode = mode
         if self.mode == 'multicolor':
             self.repeat = True
         else:
             self.repeat = False
+
         if self.startbutton.clicked(event):
             self.start(event)
         if self.warning:
             if self.messagebox.clicked(event):
                 self.warning=0
         elif self.running:  # and not warning!
-            if self.checkbutton.clicked(event) or \
-                    ((event.type == pygame.KEYDOWN) and
-                     (event.key == pygame.K_KP_ENTER or
-                      event.key == pygame.K_RETURN)):
+            if self.ai_type != 'user/no AI':
+                self.button_grid[self.row] = self.ai.guess()
                 self.check_solution()
-            if event.type == pygame.KEYDOWN:
-                if event.key in [pygame.K_1,
-                                 pygame.K_2,
-                                 pygame.K_3,
-                                 pygame.K_4,
-                                 pygame.K_5,
-                                 pygame.K_6,
-                                 pygame.K_7,
-                                 pygame.K_8]:
-                    self.update_grid(event.key-48)
-                elif event.key == pygame.K_DELETE or event.key == pygame.K_BACKSPACE:
-                    self.undo_last()
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
-                if self.in_color_area(event.pos):
-                    color = self.get_color_code(event.pos)
-                    self.update_grid(color)
-                elif self.incurrent_row(event.pos):
-                    self.remove_pin_from_grid(event.pos)
+            else:
+                if self.checkbutton.clicked(event) or \
+                        ((event.type == pygame.KEYDOWN) and
+                         (event.key == pygame.K_KP_ENTER or
+                          event.key == pygame.K_RETURN)):
+                    self.check_solution()
+                if event.type == pygame.KEYDOWN:
+                    if event.key in [pygame.K_1,
+                                     pygame.K_2,
+                                     pygame.K_3,
+                                     pygame.K_4,
+                                     pygame.K_5,
+                                     pygame.K_6,
+                                     pygame.K_7,
+                                     pygame.K_8]:
+                        self.update_grid(event.key-48)
+                    elif event.key == pygame.K_DELETE or event.key == pygame.K_BACKSPACE:
+                        self.undo_last()
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
+                    if self.in_color_area(event.pos):
+                        color = self.get_color_code(event.pos)
+                        self.update_grid(color)
+                    elif self.incurrent_row(event.pos):
+                        self.remove_pin_from_grid(event.pos)
+
+
         self.draw_background()
         if self.active:
             self.draw_game()
@@ -103,6 +112,9 @@ class MastermindGame():
         self.possibilities = self.this_mind.remaining_possibilities()
         self.start_timer()
         self.active = True
+        if self.ai_type != 'user/no AI':
+            self.ai = ai.SimpleAI(self.this_mind)
+
 
     def start_timer(self):
         self.t_start = time.time()
@@ -124,26 +136,23 @@ class MastermindGame():
         for k in range(1, 9):
             y = 50 + k * 60
             pygame.draw.circle(self.screen, COLOR[k], [350, y], 12)
-        # help icon
+        # buttons
         self.myfont.set_bold(True)
-        #pygame.draw.circle(self.screen, COLOR[2], [350, 40], 26)
-        # helpcircle = pygame.Circle(26)
-        #helplabel = self.myfont.render("?", 1, BLACK)
-        #textpos = helplabel.get_rect()
-        #textpos.centerx = 350  # self.screen.get_rect().centerx
-        #textpos.centery = 40  # self.screen.get_rect().centery
-        #self.screen.blit(helplabel, textpos)
         self.helpbutton.draw(self.screen, self.myfont)
         self.checkbutton.draw(self.screen, self.myfont)
         self.startbutton.draw(self.screen, self.myfont)
         self.stopbutton.draw(self.screen, self.myfont)
-        #self.backbutton.draw(self.screen, self.myfont)
         self.myfont.set_bold(False)
         pygame.draw.rect(self.screen, GREY, [300, 600, 400, 3])
         selectlabel = self.myfont.render(self.username, 1, BLACK)
         selectRect = selectlabel.get_rect()
         selectRect.center = (350, 610)
         self.screen.blit(selectlabel, selectRect)
+        selectlabel = self.myfont.render(self.mode, 1, BLACK)
+        selectRect = selectlabel.get_rect()
+        selectRect.center = (350, 630)
+        self.screen.blit(selectlabel, selectRect)
+
 
     def draw_pinquarter(self, b, w, x, y):
         pinc = []

@@ -47,3 +47,16 @@ class Leaderboard():
         ax.plot(self.session.steps, self.session.reduced_possibilities, 'o')
         fig.savefig('stats.png', dpi=100)  # save the figure to file
         plt.close(fig)  # close the figure
+
+    def stats2(self):
+
+        gdf = self.session[self.session['repeat']=='False']#
+        gdf2 = gdf.groupby(['name', 'game'])['steps', 'reduced_possibilities'].max()
+        print(gdf.shape)
+        ggdf = gdf.groupby(['name']).median()
+        #print(ggdf)
+        fig = plt.figure(figsize=(3, 3))
+        ax = fig.add_subplot(111)
+        ax.plot(gdf.steps, gdf.reduced_possibilities, 'o')
+        fig.savefig('stats.png', dpi=100)  # save the figure to file
+        plt.close(fig)  # close the figure

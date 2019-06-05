@@ -324,6 +324,7 @@ class Gamesession:
             self.window = 'start'
         elif self.lb_show_button.clicked(event):
             self.toggle_lb_window()
+            self.leadtable.stats2()
         self.lb_show_button.draw(self.screen, self.myfont)
         self.lb_back_button.draw(self.screen, self.myfont)
         if self.lb_window=='leaderboard':
@@ -348,13 +349,13 @@ class Gamesession:
         pygame.draw.rect(self.screen, BLACK, [left+3, 53, width, height])
         pygame.draw.rect(self.screen, GREY, [left, 50, width, height])
         self.write("Stats", left+width/2, 45, BLACK)
-        self.leadtable.stats()
         statsImg = pygame.image.load('stats.png')
         self.screen.blit(statsImg, (left+10, 53))
 
 
     def game_window(self, event):
-
+        if self.AI != 'user/no AI':
+            self.username  = self.AI
         self.thisgame.run(event, self.screen, self.myfont, self.username, self.AI, self.mode)
         if self.thisgame.end(event):
             self.window = 'start'
