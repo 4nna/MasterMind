@@ -32,7 +32,6 @@ class InputBox():
         screen.blit(selectlabel_input, selectRect_input)
 
     def get_input(self, event):
-
         if event.type == pygame.KEYDOWN:
             if event.unicode.isalpha():
                 if len(self.name)<8:
@@ -41,3 +40,5 @@ class InputBox():
                 self.name = self.name[:-1]
         return self.name
 
+    def reset_input(self):
+        self.name = ''

@@ -140,10 +140,10 @@ class Gamesession:
         self.topnames = self.leadtable.top_names()
         self.username_list_buttons = []
         for i,key in enumerate(self.topnames):
-            x = 200 + 100*i
+            x = 150 + 100*i
             self.username_list_buttons.append(button.Button(left, x, width, height, GREY, BLACK, key, BLACK))
 
-        self.text_input = text_inputbox.InputBox(200, 100, 100, 100, height, WHITE, BLACK, "enter username", BLACK, GREY)
+        self.text_input = text_inputbox.InputBox(200, 50, 150, 150, height, WHITE, BLACK, "enter username", BLACK, GREY)
         #self.ok_button = button.Button()
 
         #GAME
@@ -243,13 +243,18 @@ class Gamesession:
     def username_window(self, event):
         username = self.text_input.get_input(event)
         if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-            self.username = username
+            if len(self.topnames)>2:
+                self.topnames = self.topnames[0:2]
+                self.username_list_buttons.pop()
+            self.topnames.append(username)
+            self.username_list_buttons.append(button.Button(left, 150+100*(len(self.topnames)-1), width, height, GREY, BLACK, username, BLACK))
+            self.text_input.reset_input()
 
        # if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
         for i,key in enumerate(self.topnames):
-            if self.username_list_buttons[i].clicked(event.pos):
+            if self.username_list_buttons[i].clicked(event):
                 self.username = self.username_list_buttons[i].get_text()
-        if self.back_button.clicked(event.pos):
+        if self.back_button.clicked(event):
             self.window = 'start'
 
         for i,key in enumerate(self.topnames):
@@ -257,6 +262,7 @@ class Gamesession:
                 self.username_list_buttons[i].active(RED)
             else:
                 self.username_list_buttons[i].inactive(BLACK)
+
         self.text_input.draw(self.screen, self.myfont)
         for i,key in enumerate(self.topnames):
             self.username_list_buttons[i].draw(self.screen, self.myfont)

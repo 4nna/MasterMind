@@ -54,12 +54,14 @@ class RoundButton(Button):
         self.bordercolor = bordercolor
         self.text = text
         self.textcolor = textcolor
-        self.X = self.left + self.width/2
-        self.Y = self.top + self.height/2
 
     def draw(self, screen, myfont):
-        pygame.draw.circle(screen, self.bordercolor, [self.x+2, self.y+2], self.r+2)
+        pygame.draw.circle(screen, self.bordercolor, [self.x, self.y], self.r+2)
         pygame.draw.circle(screen, self.color, [self.x, self.y], self.r)
+        selectlabel = myfont.render(self.text, 1, self.textcolor)
+        selectRect = selectlabel.get_rect()
+        selectRect.center = (self.x, self.y)
+        screen.blit(selectlabel, selectRect)
 
     def clicked(self, event):
         return (event.type == pygame.MOUSEBUTTONDOWN) and \
