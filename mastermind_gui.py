@@ -66,8 +66,20 @@
 
 # game:
 
+##
+# back -> bak to start screen, but save session and game
+# --> add "continue" button to start screen, instead of start button
+##
 
+##
+# start -> start new game
+##
 
+##
+# stop -> stop game and return to start?
+##
+#
+# also: show session variables like username, AI, multicolor and time
 #create gui-class
 
 #def start:
@@ -82,7 +94,9 @@ import leaderboard
 import button
 import text_inputbox
 import mastermind
+import mastermindgame2
 
+from constants import *
 
 class Gamesession:
     global width
@@ -109,7 +123,6 @@ class Gamesession:
         self.start_game_button = button.Button(left, 450, width, height, GREY, BLACK, 'start game', BLACK)
         self.stop_game_button = button.Button(left, 550, width, height, GREY, BLACK, 'stop game', BLACK)
 
-
         #AI
         self.user_button = button.Button(left, 100, width, height, GREY, BLACK, 'user/no AI', BLACK)
         self.ai1_button = button.Button(left, 200, width, height, GREY, BLACK, 'simple AI', BLACK)
@@ -132,6 +145,10 @@ class Gamesession:
 
         self.text_input = text_inputbox.InputBox(200, 100, 100, 100, height, WHITE, BLACK, "enter username", BLACK, GREY)
         #self.ok_button = button.Button()
+
+        #GAME
+        self.thisgame = mastermindgame2.MastermindGame()
+
 
         # initiate game, reset all
         pygame.init()
@@ -168,9 +185,8 @@ class Gamesession:
                 elif self.window == 'leaderboard':
                     self.leaderboard_window(event)
                 elif self.window == 'game':
-                    #self.get_game_events(event)
-                    #self.draw_game()
-                    pass
+                    self.game_window(event)
+
             # ---  update the screen .
                 pygame.display.flip()
 
@@ -201,21 +217,21 @@ class Gamesession:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_KP_ENTER or event.key == pygame.K_RETURN:
                 pygame.quit()
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
+        #elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
             #print(event.pos)
-            if self.select_username_button.clicked(event.pos):
-                self.window = 'username'
-            elif self.select_ai_button.clicked(event.pos):
-                self.window = 'ai'
-            elif self.toggle_color_button.clicked(event.pos):
-                self.toggle_multicolor()
-                self.toggle_color_button.update_text(self.mode)
-            elif self.show_leaderboard_button.clicked(event.pos):
-                self.window = 'leaderboard'
-            elif self.start_game_button.clicked(event.pos):
-                self.window = 'game'
-            elif self.stop_game_button.clicked(event.pos):
-                pygame.quit()
+        if self.select_username_button.clicked(event):
+            self.window = 'username'
+        elif self.select_ai_button.clicked(event):
+            self.window = 'ai'
+        elif self.toggle_color_button.clicked(event):
+            self.toggle_multicolor()
+            self.toggle_color_button.update_text(self.mode)
+        elif self.show_leaderboard_button.clicked(event):
+            self.window = 'leaderboard'
+        elif self.start_game_button.clicked(event):
+            self.window = 'game'
+        elif self.stop_game_button.clicked(event):
+            pygame.quit()
 
         self.select_username_button.draw(self.screen, self.myfont)
         self.select_ai_button.draw(self.screen, self.myfont)
@@ -229,12 +245,12 @@ class Gamesession:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
             self.username = username
 
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
-            for i,key in enumerate(self.topnames):
-                if self.username_list_buttons[i].clicked(event.pos):
-                    self.username = self.username_list_buttons[i].get_text()
-            if self.back_button.clicked(event.pos):
-                self.window = 'start'
+       # if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
+        for i,key in enumerate(self.topnames):
+            if self.username_list_buttons[i].clicked(event.pos):
+                self.username = self.username_list_buttons[i].get_text()
+        if self.back_button.clicked(event.pos):
+            self.window = 'start'
 
         for i,key in enumerate(self.topnames):
             if self.username_list_buttons[i].get_text() == self.username:
@@ -249,17 +265,17 @@ class Gamesession:
 
     def ai_window(self, event):
 
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
-            if self.user_button.clicked(event.pos):
-                self.AI = 'user/no AI'
-            elif self.ai1_button.clicked(event.pos):
-                self.AI = 'AI_1'
-            elif self.ai2_button.clicked(event.pos):
-                self.AI = 'AI_2'
-            elif self.ai3_button.clicked(event.pos):
-                self.AI = 'AI_3'
-            elif self.back_button.clicked(event.pos):
-                self.window = 'start'
+       #  if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
+        if self.user_button.clicked(event):
+            self.AI = 'user/no AI'
+        elif self.ai1_button.clicked(event):
+            self.AI = 'AI_1'
+        elif self.ai2_button.clicked(event):
+            self.AI = 'AI_2'
+        elif self.ai3_button.clicked(event):
+            self.AI = 'AI_3'
+        elif self.back_button.clicked(event):
+                 self.window = 'start'
 
         if self.AI == 'user/no AI':
             self.user_button.active(RED)
@@ -296,12 +312,12 @@ class Gamesession:
 
 
     def leaderboard_window(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
-            #print(event.pos)
-            if self.lb_back_button.clicked(event.pos):
-                self.window = 'start'
-            elif self.lb_show_button.clicked(event.pos):
-                self.toggle_lb_window()
+        #if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
+        #print(event.pos)
+        if self.lb_back_button.clicked(event):
+            self.window = 'start'
+        elif self.lb_show_button.clicked(event):
+            self.toggle_lb_window()
         self.lb_show_button.draw(self.screen, self.myfont)
         self.lb_back_button.draw(self.screen, self.myfont)
         if self.lb_window=='leaderboard':
@@ -331,42 +347,20 @@ class Gamesession:
         self.screen.blit(statsImg, (left+10, 53))
 
 
+    def game_window(self, event):
+
+        self.thisgame.run(event, self.screen, self.myfont, self.username, self.AI, self.mode)
+        if self.thisgame.end(event):
+            self.window = 'start'
+
     def toggle_multicolor(self):
         if self.mode == 'unique colors':
             self.mode = 'multicolor'
         else:
             self.mode = 'unique colors'
 
-# Define some colors
-WHITE = (255, 255, 255)
-YELLOW = (255, 255, 0)
-ORANGE = (255, 125, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-BROWN = (125, 125, 25)
-BLACK = (0, 0, 0)
-GREY = (170, 170, 170)
-DARKGREY = (150, 150, 150)
-BACKGROUND = (200, 200, 200)
-MESSAGECOLOR = (220, 200, 30)
 
-COLOR = {}
-COLOR[1] = WHITE
-COLOR[2] = YELLOW
-COLOR[3] = ORANGE
-COLOR[4] = RED
-COLOR[5] = GREEN
-COLOR[6] = BLUE
-COLOR[7] = BROWN
-COLOR[8] = BLACK
 
-# Define mouse buttons
-LEFT = 1
-
-# guess positions:
-X_POS = [50, 100, 150, 200]
-Y_POS = range(550, 99, -50)
 
 mysession = Gamesession()
 mysession.run()

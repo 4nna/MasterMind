@@ -1,0 +1,32 @@
+# Define some colors
+WHITE = (255, 255, 255)
+YELLOW = (255, 255, 0)
+ORANGE = (255, 125, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+BROWN = (125, 125, 25)
+BLACK = (0, 0, 0)
+GREY = (170, 170, 170)
+DARKGREY = (150, 150, 150)
+BACKGROUND = (200, 200, 200)
+MESSAGECOLOR = (220, 200, 30)
+
+COLOR = {}
+COLOR[1] = WHITE
+COLOR[2] = YELLOW
+COLOR[3] = ORANGE
+COLOR[4] = RED
+COLOR[5] = GREEN
+COLOR[6] = BLUE
+COLOR[7] = BROWN
+COLOR[8] = BLACK
+
+# Define mouse buttons
+LEFT = 1
+
+
+# guess positions:
+X_POS = [50, 100, 150, 200]
+Y_POS = range(550, 99, -50)
+
