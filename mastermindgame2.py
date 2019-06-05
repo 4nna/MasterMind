@@ -3,6 +3,7 @@ import time
 import os
 import mastermind
 import button
+import messagebox
 from constants import *
 
 
@@ -32,16 +33,18 @@ class MastermindGame():
         self.button_grid = [[None] * 4 for _ in range(10)]
         self.game = 0
         self.had_help = 0
-     #BOARD
+        self.warning = 0
+        #BOARD
         self.checkbutton = button.Button(0, 600, 100, 50, GREY, BLACK, 'Check!', BLACK)
         self.startbutton = button.Button(100, 600, 100, 50, GREY, BLACK, 'Start', BLACK)
         self.stopbutton = button.Button(200, 600, 100, 50, GREY, BLACK, 'End', BLACK)
         #self.backbutton = button.Button(300, 600, 100, 50, GREY, BLACK, 'Back', BLACK)
         self.helpbutton = button.RoundButton(350, 40, 26, YELLOW, BLACK, '?', BLACK)
+        self.messagebox = messagebox.MessageBox( )
 
     def reset(self):
-        self.row = None
-        self.column = None
+        self.row = 0
+        self.column = 0
         self.thismind = None
         self.possibilities = None
         self.pin_grid = []
@@ -59,7 +62,10 @@ class MastermindGame():
             self.repeat = False
         if self.startbutton.clicked(event):
             self.start(event)
-        if self.running:
+        if self.warning:
+            if self.messagebox.clicked(event):
+                self.warning=0
+        elif self.running:  # and not warning!
             if self.checkbutton.clicked(event) or \
                     ((event.type == pygame.KEYDOWN) and
                      (event.key == pygame.K_KP_ENTER or
@@ -92,11 +98,10 @@ class MastermindGame():
 
     def start(self, event):
         # initiate mastermind session
+        self.reset()
         self.this_mind = mastermind.Mastermind(repeat=self.repeat)
         self.possibilities = self.this_mind.remaining_possibilities()
         self.start_timer()
-        self.row = 0
-        self.column = 0
         self.active = True
 
     def start_timer(self):
@@ -160,6 +165,8 @@ class MastermindGame():
         self.draw_current_row()
         self.draw_current()
         self.draw_solution_area()
+        if self.warning:
+            self.messagebox.draw(self.screen, self.myfont)
 
     def draw_solution_area(self):
         if self.running:
@@ -209,15 +216,6 @@ class MastermindGame():
             pygame.draw.circle(self.screen, YELLOW,
                                [X_POS[self.column], Y_POS[self.row]], 12, 2)
 
-    def draw_messages(self, text):
-        """"draws popup box and message text"""
-        pygame.draw.rect(self.screen, MESSAGECOLOR, [50, 200, 255, 100])
-        label = self.myfont.render(text, 1, BLACK)
-        self.screen.blit(label, (120, 220))
-        pygame.draw.rect(self.screen, (240, 150, 50), [140, 270, 60, 22])
-        label2 = self.myfont.render('OK', 1, BLACK)
-        self.screen.blit(label2, (160, 270))
-        # ok button
 
     def show_solution(self):
         """shows solution, when game is over"""
@@ -226,9 +224,6 @@ class MastermindGame():
         for i in range(4):
             x = X_POS[i]
             pygame.draw.circle(self.screen, COLOR[solution[i]], [x, y], 10)
-
-    def warning(self, text):
-        pass
 
     def in_color_area(self, pos):
         return 300 < pos[0] < 400 and 60 < pos[1] < 600
@@ -273,7 +268,8 @@ class MastermindGame():
         # check if all 4 color buttons have a color
         for buttoncolor in this_guess:
             if buttoncolor == 'None':
-                self.warning('')
+                self.warning = 1
+                self.messagebox.set_text('Choose four colors')
                 return()
         # get correction for guess
         (b, w) = self.this_mind.get_pins(this_guess)
@@ -285,15 +281,19 @@ class MastermindGame():
                          ",".join([str(b), str(w)]),
                          self.possibilities-self.this_mind.remaining_possibilities())
         if b == 4:
-            #mes['won'] = True
+            self.warning = 1
+            self.messagebox.set_text('YOU WON')
             self.running = False
             if not self.had_help:
-                self.archive()
+                score = int(500000. / self.t / (self.row + 1))
+                self.archive(score)
+                self.messagebox.set_text(self.messagebox.text + '\n' + '%i points (%i sec, %i moves)' % (score, self.t, self.row + 1))
             return()
         self.possibilities = self.this_mind.remaining_possibilities()
         self.row += 1
         if self.row > 9:
-            #mes['lost'] = True
+            self.messagebox.set_text('YOU LOST')
+            self.warning = 1
             self.running = False
         self.column = 0
 
@@ -310,9 +310,8 @@ class MastermindGame():
                     + str(pins) + ', '
                     + str(remaining_possibilities) + '\n')
 
-    def archive(self):
+    def archive(self, score):
         """ write score into leader board"""
-        score = int(500000. / self.t / (self.row + 1))
         if not os.path.exists('.mastermind.log'):
             with open('.mastermind.log', 'w') as f:
                 f.write('date,name,rows,time,score,repeat\n')  # no whitespaces in column names..

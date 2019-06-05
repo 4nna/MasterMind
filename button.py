@@ -43,6 +43,11 @@ class Button() :
     def update_text(self, text):
         self.text = text
 
+    def set_coords(self, left, top):
+        self.left = left
+        self.top = top
+        self.X = self.left + self.width/2
+        self.Y = self.top + self.height/2
 
 class RoundButton(Button):
 
